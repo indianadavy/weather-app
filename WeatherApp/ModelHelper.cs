@@ -22,4 +22,23 @@ public class ModelHelper
         };
         return weatherForecast;
     }
+    
+    public static WeatherForecastDto? MapToDto(WeatherForecast result)
+    {
+        return new WeatherForecastDto
+        {
+            _id = result._id.ToString(),
+            latitude = result.location.Coordinates.Latitude,
+            longitude = result.location.Coordinates.Longitude,
+            generationtime_ms = result.generationtime_ms,
+            utc_offset_seconds = result.utc_offset_seconds,
+            timezone = result.timezone,
+            timezone_abbreviation = result.timezone_abbreviation,
+            elevation = result.elevation,
+            current_weather = result.current_weather,
+            hourly_units = result.hourly_units,
+            hourly = result.hourly
+        };
+    }
+
 }

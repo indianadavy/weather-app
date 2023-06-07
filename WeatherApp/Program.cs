@@ -1,5 +1,8 @@
+using MongoDB.Driver;
+using WeatherApp;
 using WeatherApp.DataAccess;
 using WeatherApp.DataAccess.Interfaces;
+using WeatherApp.Factories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +11,12 @@ builder.Configuration.AddEnvironmentVariables();
 builder.Configuration.AddJsonFile("appsettings.json", optional: true);
 
 // Add services
+builder.Services.AddSingleton<IDataAccessFactory, DataAccessFactory>();
+builder.Services.AddSingleton<IMongoCollection<WeatherForecast>>(x =>
+{
+    IDataAccessFactory factory = x.GetRequiredService<IDataAccessFactory>();
+    return factory.GetMongoCollection();
+});
 builder.Services.AddSingleton<IMongoDbCollectionDataAccess, MongoDbCollectionDataAccess>();
 builder.Services.AddSingleton<IOpenMeteoDataAccess, OpenMeteoDataAccess>();
 

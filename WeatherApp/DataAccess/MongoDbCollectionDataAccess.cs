@@ -9,16 +9,9 @@ public class MongoDbCollectionDataAccess : IMongoDbCollectionDataAccess
 {
     private readonly IMongoCollection<WeatherForecast> _collection;
 
-    public MongoDbCollectionDataAccess(IConfiguration configuration)
+    public MongoDbCollectionDataAccess(IMongoCollection<WeatherForecast> collection)
     {
-        // read from environment variables, appsettings or default
-        var url = configuration.GetValue<string>("MONGODB_URL") ?? "mongodb://localhost:27017";
-        var collection = configuration.GetValue<string>("MONGODB_COLLECTION") ?? "forecasts";
-        var database = configuration.GetValue<string>("MONGODB_DATABASE") ?? "weather";
-
-        // create a client and get the collection
-        var mongoClient = new MongoClient(url);
-        _collection = mongoClient.GetDatabase(database).GetCollection<WeatherForecast>(collection);
+        _collection = collection;
     }
 
     public async Task InsertOneAsync(WeatherForecast weatherForecast)
@@ -70,26 +63,6 @@ public class MongoDbCollectionDataAccess : IMongoDbCollectionDataAccess
 
         throw new Exception("Update operation failed.");
     }
-    
-    // public async Task<bool> UpdateOneAsync(WeatherForecast weatherForecast)
-    // {
-    //     var result = await _collection.ReplaceOneAsync(
-    //         x => x.location.Coordinates.Longitude == weatherForecast.location.Coordinates.Longitude
-    //             && x.location.Coordinates.Latitude == weatherForecast.location.Coordinates.Latitude,
-    //         weatherForecast);
-    //
-    //     if (result.IsAcknowledged && result.ModifiedCount > 0)
-    //     {
-    //         return true; // Document found and modified
-    //     }
-    //
-    //     if (result.IsAcknowledged && result.ModifiedCount == 0)
-    //     {
-    //         return false; // Document not found
-    //     }
-    //
-    //     throw new Exception("Update operation failed.");
-    // }
 
     public async Task<WeatherForecastDto?> GetOneAsync(double lon, double lat)
     {
@@ -100,50 +73,19 @@ public class MongoDbCollectionDataAccess : IMongoDbCollectionDataAccess
 
         if (result != null)
         {
-            var forecastDto = new WeatherForecastDto
-            {
-                _id = result._id.ToString(),
-                latitude = result.location.Coordinates.Latitude,
-                longitude = result.location.Coordinates.Longitude,
-                generationtime_ms = result.generationtime_ms,
-                utc_offset_seconds = result.utc_offset_seconds,
-                timezone = result.timezone,
-                timezone_abbreviation = result.timezone_abbreviation,
-                elevation = result.elevation,
-                current_weather = result.current_weather,
-                hourly_units = result.hourly_units,
-                hourly = result.hourly
-            };
-
-            return forecastDto;
+            return ModelHelper.MapToDto(result);
         }
-
         return null;
     }
 
-    public async Task<WeatherForecastDto> GetOneAsync(string id)
+    public async Task<WeatherForecastDto?> GetOneAsync(string id)
     {
         var filter = Builders<WeatherForecast>.Filter.Eq("_id", ObjectId.Parse(id));
         var result = await _collection.Find(filter).FirstOrDefaultAsync();
 
         if (result != null)
         {
-            var forecastDto = new WeatherForecastDto
-            {
-                _id = result._id.ToString(),
-                latitude = result.location.Coordinates.Latitude,
-                longitude = result.location.Coordinates.Longitude,
-                generationtime_ms = result.generationtime_ms,
-                utc_offset_seconds = result.utc_offset_seconds,
-                timezone = result.timezone,
-                timezone_abbreviation = result.timezone_abbreviation,
-                elevation = result.elevation,
-                current_weather = result.current_weather,
-                hourly_units = result.hourly_units,
-                hourly = result.hourly
-            };
-
-            return forecastDto;
+            return ModelHelper.MapToDto(result);
         }
 
         return null;

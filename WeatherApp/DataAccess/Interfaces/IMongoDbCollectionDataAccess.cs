@@ -8,6 +8,6 @@ public interface IMongoDbCollectionDataAccess
     Task<bool> DeleteOneAsync(double lon, double lat);
     Task<bool> UpdateOneAsync(WeatherForecast weatherForecast);
     Task<WeatherForecastDto?> GetOneAsync(double lon, double lat);
-    Task<WeatherForecastDto> GetOneAsync(string id);
+    Task<WeatherForecastDto?> GetOneAsync(string id);
     Task<List<WeatherForecast>> List();
 }
