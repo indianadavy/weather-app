@@ -12,13 +12,12 @@ builder.Configuration.AddJsonFile("appsettings.json", optional: true);
 
 // Add services
 builder.Services.AddSingleton<IDataAccessFactory, DataAccessFactory>();
-builder.Services.AddSingleton<IMongoCollection<WeatherForecast>>(x =>
-{
-    IDataAccessFactory factory = x.GetRequiredService<IDataAccessFactory>();
-    return factory.GetMongoCollection();
-});
+builder.Services.AddSingleton<IMongoCollection<WeatherForecast>>(sp =>
+    sp.GetRequiredService<IDataAccessFactory>().GetMongoCollection());
 builder.Services.AddSingleton<IMongoDbCollectionDataAccess, MongoDbCollectionDataAccess>();
-builder.Services.AddSingleton<IOpenMeteoDataAccess, OpenMeteoDataAccess>();
+builder.Services.AddTransient(sp => sp.GetRequiredService<IDataAccessFactory>().GetOpenMeteoDataAccess(sp));
+builder.Services.AddHttpClient();
+builder.Services.AddLogging();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

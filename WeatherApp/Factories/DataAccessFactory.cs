@@ -7,13 +7,13 @@ namespace WeatherApp.Factories;
 
 public class DataAccessFactory : IDataAccessFactory
 {
-	// private readonly IHttpClientFactory _httpClientFactory;
 	private readonly IConfiguration _configuration;
+	private readonly IHttpClientFactory _httpClientFactory;
 
-	public DataAccessFactory(IConfiguration configuration)
+	public DataAccessFactory(IConfiguration configuration, IHttpClientFactory httpClientFactory)
 	{
-		// _httpClientFactory = httpClientFactory;
 		_configuration = configuration;
+		_httpClientFactory = httpClientFactory;
 	}
 	
 	public IMongoCollection<WeatherForecast> GetMongoCollection()
@@ -28,5 +28,18 @@ public class DataAccessFactory : IDataAccessFactory
 		var mongoCollection = mongoClient.GetDatabase(database).GetCollection<WeatherForecast>(collection);
 		
 		return mongoCollection;
+	}
+
+	public IOpenMeteoDataAccess GetOpenMeteoDataAccess(IServiceProvider sp)
+	{
+		// read from environment variables, appsettings or default
+		var baseUrl = _configuration.GetValue<string>("OPEN_METEO_BASE_URL") ?? "https://api.open-meteo.com/v1/forecast";
+		var httpClient = _httpClientFactory.CreateClient();
+		var logger = sp.GetRequiredService<ILogger<OpenMeteoDataAccess>>();
+		
+		// create the data access object
+		var openMeteoDataAccess = new OpenMeteoDataAccess(logger, httpClient, baseUrl);
+		
+		return openMeteoDataAccess;
 	}
 }

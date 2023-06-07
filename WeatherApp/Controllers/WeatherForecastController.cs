@@ -9,7 +9,7 @@ namespace WeatherApp.Controllers;
 [Route("[controller]")]
 public class WeatherForecastController : ControllerBase
 {
-    private readonly ILogger<WeatherForecastController> _logger;
+    private readonly ILogger _logger;
     private readonly IOpenMeteoDataAccess _openMeteo;
     private readonly IMongoDbCollectionDataAccess _mongoDb;
 
@@ -19,8 +19,12 @@ public class WeatherForecastController : ControllerBase
         _mongoDb = mongoDb;
         _openMeteo = openMeteo;
     }
-    
-    
+
+    /// <summary>
+    /// Gets the weather forecast for the given coordinates from the database by id.
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     [HttpGet("{id}")]
     public async Task<IActionResult> GetForecast(string id)
     {
@@ -32,7 +36,12 @@ public class WeatherForecastController : ControllerBase
         
         return BadRequest("Unable to fetch weather");
     }
-
+    
+    /// <summary>
+    /// Gets the weather forecast for the given coordinates from the database by longitude and latitude.
+    /// </summary>
+    /// <param name="coordinates"></param>
+    /// <returns></returns>
     [HttpGet]
     public async Task<IActionResult> GetForecast([FromQuery] Coordinates coordinates)
     {
@@ -41,40 +50,36 @@ public class WeatherForecastController : ControllerBase
         {
             return BadRequest(ModelState);
         }
-
-        var forecast = await _mongoDb.GetOneAsync(coordinates.longitude.Value, coordinates.latitude.Value);
         
-        // var weather = await _mongoDb.GetOneAsync<WeatherForecast>(coordinates.longitude.Value, coordinates.latitude.Value);
-        if (forecast != null)
+        var forecastDto = await _mongoDb.GetOneAsync(coordinates.longitude.Value, coordinates.latitude.Value);
+        // if forecast doesn't exist in the database, try to fetch from Open-Meteo API then add to database
+        if (forecastDto == null)
         {
-            return Ok(forecast);
+            var forecast = await _openMeteo.GetForecast(coordinates.longitude.Value, coordinates.latitude.Value);
+            if (forecast != null)
+            {
+                await _mongoDb.InsertOneAsync(forecast);
+                forecastDto = ModelHelper.MapToDto(forecast);
+            }
+            else
+            {
+                return Problem(detail: "An error occured", statusCode: StatusCodes.Status500InternalServerError );
+            }
+        }
+
+        if (forecastDto != null)
+        {
+            return Ok(forecastDto);
         }
 
         return BadRequest("Unable to fetch weather");
     }
-    
-    // [HttpGet]
-    // public async Task<IActionResult> GetForecast([FromBody] Coordinates coordinates)
-    // {
-    //     // validate coordinates using ModelState. 
-    //     if (!ModelState.IsValid)
-    //     {
-    //         return BadRequest(ModelState);
-    //     }
-    //     
-    //     var weather = await _openMeteo.GetForecast(coordinates.longitude.Value, coordinates.latitude.Value);
-    //     if (weather != null)
-    //     {
-    //         // convert weather to BsonDocument
-    //         var forecast = weather.ToBsonDocument();
-    //         // await _collection.InsertOneAsync(weather);
-    //
-    //         return Ok(forecast);
-    //     }
-    //     
-    //     return BadRequest("Unable to fetch weather");
-    // }
-    
+
+    /// <summary>
+    /// Gets the latest weather forecast for the given coordinates from Open-Meteo API and stores it in the database.
+    /// </summary>
+    /// <param name="coordinates"></param>
+    /// <returns></returns>
     [HttpPost]
     public async Task<IActionResult> AddForecast([FromBody] Coordinates coordinates)
     {
@@ -98,29 +103,6 @@ public class WeatherForecastController : ControllerBase
         return Problem(detail: "An error occured", statusCode: StatusCodes.Status500InternalServerError );
     }
     
-    // [HttpPut]
-    // public async Task<IActionResult> UpdateForecast([FromBody] WeatherForecastDto weatherForecastDto)
-    // {
-    //     if (!ModelState.IsValid)
-    //     {
-    //         return BadRequest(ModelState);
-    //     }
-    //
-    //     var weatherForecast = WeatherForecast.MapToWeatherForcast(weatherForecastDto);
-    //     
-    //     var updatedResult = await _mongoDb.UpdateOneAsync(weatherForecast);
-    //     
-    //     if (updatedResult)
-    //     {
-    //         return NoContent();
-    //     }
-    //
-    //     _logger.LogWarning($"Document not found: lon={weatherForecast.location.Coordinates.Longitude}, lat={weatherForecast.location.Coordinates.Latitude}");
-    //     return NotFound("Document not found");
-    // }
-    
-    // Task<IActionResult> GetLatestForecast(double lon, double lat)
-    // should return the latest forecast for the given coordinates and update the document in the database
     [HttpPut]
     public async Task<IActionResult> UpdateLatestForecast([FromQuery] Coordinates coordinates)
     {
@@ -177,26 +159,4 @@ public class WeatherForecastController : ControllerBase
         
         return Ok(result);
     }
-    
-    // private bool IsValidLatLon(double? lon, double? lat)
-    // {
-    //     if (!lat.HasValue || !lon.HasValue || lat.Value < -90 || lat.Value > 90 || lon.Value < -180 || lon.Value > 180)
-    //     {
-    //         _logger.LogWarning($"Invalid longitude/latitude values: Lon={lon}, Lat={lat}");
-    //         return false;
-    //     }
-    //
-    //     return true;
-    // }
-    //
-    // private bool IsValidCoordinates(Coordinates coordinates)
-    // {
-    //     if (coordinates.latitude < -90 || coordinates.latitude > 90 || coordinates.longitude < -180 || coordinates.longitude > 180)
-    //     {
-    //         _logger.LogWarning($"Invalid longitude/latitude values: Lon={coordinates.longitude}, Lat={coordinates.latitude}");
-    //         return false;
-    //     }
-    //
-    //     return true;
-    // }
 }
