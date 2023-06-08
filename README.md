@@ -34,6 +34,24 @@ To run the tests, run the following command this command on a terminal on the ro
 dotnet test
 ```
 
+## Running the app with docker-compose
+
+To run the app with docker-compose, move to the demo folder and run the following commands:
+
+```shell
+cd demo
+docker-compose up --build -d
+```
+
+This will start the API and the database. You can then interact with the API on your browser by going to `http://localhost:5102/swagger/index.html`.
+
+Alternatively, you can run hit the API directly with Postman or curl. For example:
+
+```shell
+curl -X POST -H "Content-Type: application/json" -d '{"latitude": 0, "longitude": 5}' http://localhost:5102/WeatherForecast
+
+```
+
 ## Querying MongoDB
 
 Open a terminal and run the following command to open a mongo shell:
@@ -58,4 +76,3 @@ db.forecasts.find().pretty()
 # show a specific document in the forecasts collection
 db.forecasts.find({ _id: "892634234" })
 ```
-

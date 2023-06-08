@@ -6,9 +6,9 @@ using WeatherApp.Factories;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add configuration to the app for envrioment variables & appsettings.json
-builder.Configuration.AddEnvironmentVariables();
+// Add configuration to the app for enviroment variables > appsettings.json
 builder.Configuration.AddJsonFile("appsettings.json", optional: true);
+builder.Configuration.AddEnvironmentVariables();
 
 // Add services
 builder.Services.AddSingleton<IDataAccessFactory, DataAccessFactory>();
@@ -30,7 +30,10 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "WeatherApp v1");
+    });
 }
 
 app.UseHttpsRedirection();

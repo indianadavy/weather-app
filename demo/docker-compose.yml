@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  mongodb:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 27017:27017
+    networks:
+      - mynetwork
+
+  weather-app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    ports:
+      - 5102:80
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - MONGODB_DATABASE=weather
+      - MONGODB_COLLECTION=forecasts
+      - OPEN_METEO_BASE_URL=https://api.open-meteo.com/v1/forecast
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - mongodb
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
