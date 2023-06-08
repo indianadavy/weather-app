@@ -2,7 +2,7 @@
 
 ## Description
 
-This is a simple weather API that uses the `open-meteo` API to display the current weather and a 5-day forecast for a given city. The app also saves the user's search history and allows them to click on a city to see the weather for that city again.
+This is a simple weather API that uses the `open-meteo` API to display the current weather for a given `longitude` and `latitude`. The app also saves the user's search history on a `mongodb` and allows them select a previous coordinate to get the weather again.
 
 ## requirements
 
