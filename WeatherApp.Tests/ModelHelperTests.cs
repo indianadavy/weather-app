@@ -11,7 +11,7 @@ public class ModelHelperTests
     public void MapToWeatherForcast_ShouldReturnWeatherForecast_WhenResponseIsSuccessful()
     {
         // Arrange
-        var weatherDataDto = new WeatherForecastDto
+        var weatherForecastDto = new WeatherForecastDto
         {
             latitude = 13.4050,
             longitude = 52.5200,
@@ -26,19 +26,19 @@ public class ModelHelperTests
         };
 
         // Act
-        var result = ModelHelper.MapToWeatherForcast(weatherDataDto);
+        var result = ModelHelper.MapToWeatherForcast(weatherForecastDto);
 
         // Assert
-        Assert.That(result.location.Coordinates.Latitude, Is.EqualTo(weatherDataDto.latitude));
-        Assert.That(result.location.Coordinates.Longitude, Is.EqualTo(weatherDataDto.longitude));
-        Assert.That(result.generationtime_ms, Is.EqualTo(weatherDataDto.generationtime_ms));
-        Assert.That(result.utc_offset_seconds, Is.EqualTo(weatherDataDto.utc_offset_seconds));
-        Assert.That(result.timezone, Is.EqualTo(weatherDataDto.timezone));
-        Assert.That(result.timezone_abbreviation, Is.EqualTo(weatherDataDto.timezone_abbreviation));
-        Assert.That(result.elevation, Is.EqualTo(weatherDataDto.elevation));
-        Assert.That(result.current_weather, Is.EqualTo(weatherDataDto.current_weather));
-        Assert.That(result.hourly_units, Is.EqualTo(weatherDataDto.hourly_units));
-        Assert.That(result.hourly, Is.EqualTo(weatherDataDto.hourly));
+        Assert.That(result.location.Coordinates.Latitude, Is.EqualTo(weatherForecastDto.latitude));
+        Assert.That(result.location.Coordinates.Longitude, Is.EqualTo(weatherForecastDto.longitude));
+        Assert.That(result.generationtime_ms, Is.EqualTo(weatherForecastDto.generationtime_ms));
+        Assert.That(result.utc_offset_seconds, Is.EqualTo(weatherForecastDto.utc_offset_seconds));
+        Assert.That(result.timezone, Is.EqualTo(weatherForecastDto.timezone));
+        Assert.That(result.timezone_abbreviation, Is.EqualTo(weatherForecastDto.timezone_abbreviation));
+        Assert.That(result.elevation, Is.EqualTo(weatherForecastDto.elevation));
+        Assert.That(result.current_weather, Is.EqualTo(weatherForecastDto.current_weather));
+        Assert.That(result.hourly_units, Is.EqualTo(weatherForecastDto.hourly_units));
+        Assert.That(result.hourly, Is.EqualTo(weatherForecastDto.hourly));
     }
     
     // test MapToDto
@@ -48,7 +48,7 @@ public class ModelHelperTests
         var location = new GeoJsonPoint<GeoJson2DGeographicCoordinates>(
             new GeoJson2DGeographicCoordinates(13.4050, 52.5200));
         // Arrange
-        var weatherData = new WeatherForecast
+        var weatherForecast = new WeatherForecast
         {
             location = location,
             generationtime_ms = 0.12345678,
@@ -62,18 +62,18 @@ public class ModelHelperTests
         };
 
         // Act
-        var result = ModelHelper.MapToDto(weatherData);
+        var result = ModelHelper.MapToDto(weatherForecast);
 
         // Assert
-        Assert.That(result.latitude, Is.EqualTo(weatherData.location.Coordinates.Latitude));
-        Assert.That(result.longitude, Is.EqualTo(weatherData.location.Coordinates.Longitude));
-        Assert.That(result.generationtime_ms, Is.EqualTo(weatherData.generationtime_ms));
-        Assert.That(result.utc_offset_seconds, Is.EqualTo(weatherData.utc_offset_seconds));
-        Assert.That(result.timezone, Is.EqualTo(weatherData.timezone));
-        Assert.That(result.timezone_abbreviation, Is.EqualTo(weatherData.timezone_abbreviation));
-        Assert.That(result.elevation, Is.EqualTo(weatherData.elevation));
-        Assert.That(result.current_weather, Is.EqualTo(weatherData.current_weather));
-        Assert.That(result.hourly_units, Is.EqualTo(weatherData.hourly_units));
-        Assert.That(result.hourly, Is.EqualTo(weatherData.hourly));
+        Assert.That(result.latitude, Is.EqualTo(weatherForecast.location.Coordinates.Latitude));
+        Assert.That(result.longitude, Is.EqualTo(weatherForecast.location.Coordinates.Longitude));
+        Assert.That(result.generationtime_ms, Is.EqualTo(weatherForecast.generationtime_ms));
+        Assert.That(result.utc_offset_seconds, Is.EqualTo(weatherForecast.utc_offset_seconds));
+        Assert.That(result.timezone, Is.EqualTo(weatherForecast.timezone));
+        Assert.That(result.timezone_abbreviation, Is.EqualTo(weatherForecast.timezone_abbreviation));
+        Assert.That(result.elevation, Is.EqualTo(weatherForecast.elevation));
+        Assert.That(result.current_weather, Is.EqualTo(weatherForecast.current_weather));
+        Assert.That(result.hourly_units, Is.EqualTo(weatherForecast.hourly_units));
+        Assert.That(result.hourly, Is.EqualTo(weatherForecast.hourly));
     }
 }

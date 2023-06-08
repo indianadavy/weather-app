@@ -10,10 +10,28 @@ This is a simple weather API that uses the `open-meteo` API to display the curre
 
 ## Running the app
 
+First thing you need to do is start the database. Run the following command to start a MongoDB container:
+
 ```shell
 docker build -t my-mongo-image .
 docker run --name my-mongo-container -p 27017:27017 -d my-mongo-image
+```
 
+Next, you need to start the API. By running it in your IDE of choice or run the following commands on the root of the project:
+
+```shell
+cd WeatherApp
+dotnet run
+```
+
+Then you can interact with the API on your browser by going to `http://localhost:5102/swagger/index.html`.
+
+## Running the tests
+
+To run the tests, run the following command this command on a terminal on the root of the project:
+
+```shell
+dotnet test
 ```
 
 ## Querying MongoDB

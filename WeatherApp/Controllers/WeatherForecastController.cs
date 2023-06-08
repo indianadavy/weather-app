@@ -33,8 +33,8 @@ public class WeatherForecastController : ControllerBase
         {
             return Ok(forecast);
         }
-        
-        return BadRequest("Unable to fetch weather");
+
+        return NotFound("Forecast not found");
     }
     
     /// <summary>
@@ -89,20 +89,25 @@ public class WeatherForecastController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var weatherData = await _openMeteo.GetForecast(coordinates.longitude.Value, coordinates.latitude.Value);
-        if (weatherData != null)
+        var weatherForecast = await _openMeteo.GetForecast(coordinates.longitude.Value, coordinates.latitude.Value);
+        if (weatherForecast != null)
         {
-            await _mongoDb.InsertOneAsync(weatherData);
+            await _mongoDb.InsertOneAsync(weatherForecast);
 
-            var response = new { id = weatherData._id.ToString() };
+            var response = new { id = weatherForecast._id.ToString() };
 
             // return 201 with location of newly created resource. i.e. /weatherforecast/{id}
-            return CreatedAtAction("GetForecast", new { id = weatherData._id }, response);
+            return CreatedAtAction("GetForecast", new { id = weatherForecast._id }, response);
         }
 
         return Problem(detail: "An error occured", statusCode: StatusCodes.Status500InternalServerError );
     }
     
+    /// <summary>
+    /// Updates the latest weather forecast for the given coordinates in the database.
+    /// </summary>
+    /// <param name="coordinates"></param>
+    /// <returns></returns>
     [HttpPut]
     public async Task<IActionResult> UpdateLatestForecast([FromQuery] Coordinates coordinates)
     {
@@ -130,6 +135,11 @@ public class WeatherForecastController : ControllerBase
         return BadRequest("Update failed");
     }
 
+    /// <summary>
+    /// Deletes the weather forecast for the given coordinates from the database.
+    /// </summary>
+    /// <param name="coordinates"></param>
+    /// <returns></returns>
     [HttpDelete]
     public async Task<IActionResult> DeleteForecast([FromBody] Coordinates coordinates)
     {
@@ -149,6 +159,10 @@ public class WeatherForecastController : ControllerBase
         return NotFound("Document not found");
     }
     
+    /// <summary>
+    /// Gets all weather forecasts from the database.
+    /// </summary>
+    /// <returns></returns>
     [HttpGet("all")]
     public async Task<IActionResult> GetForecasts()
     {
