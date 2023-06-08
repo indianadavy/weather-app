@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 using Moq;
 using MongoDB.Driver;
@@ -12,12 +13,14 @@ public class MongoDbCollectionDataAccessTests
 {
     private Mock<IMongoCollection<WeatherForecast>> _mockCollection;
     private MongoDbCollectionDataAccess _dao;
+    private Mock<ILogger<MongoDbCollectionDataAccess>> _loggerMock;
 
     [SetUp]
     public void Setup()
     {
+        _loggerMock = new Mock<ILogger<MongoDbCollectionDataAccess>>();
         _mockCollection = new Mock<IMongoCollection<WeatherForecast>>();
-        _dao = new MongoDbCollectionDataAccess(_mockCollection.Object);
+        _dao = new MongoDbCollectionDataAccess(_loggerMock.Object, _mockCollection.Object);
     }
 
     #region InsertOneAsync

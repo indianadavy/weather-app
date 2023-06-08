@@ -7,16 +7,26 @@ namespace WeatherApp.DataAccess;
 
 public class MongoDbCollectionDataAccess : IMongoDbCollectionDataAccess
 {
+    private readonly ILogger<MongoDbCollectionDataAccess> _logger;
     private readonly IMongoCollection<WeatherForecast> _collection;
 
-    public MongoDbCollectionDataAccess(IMongoCollection<WeatherForecast> collection)
+    public MongoDbCollectionDataAccess(ILogger<MongoDbCollectionDataAccess> logger, IMongoCollection<WeatherForecast> collection)
     {
+        _logger = logger;
         _collection = collection;
     }
 
     public async Task InsertOneAsync(WeatherForecast weatherForecast)
     {
-        await _collection.InsertOneAsync(weatherForecast);
+        try
+        {
+            await _collection.InsertOneAsync(weatherForecast);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("Error writing to the database: {0}", e.Message);
+            throw;
+        }
     }
 
     public async Task<bool> DeleteOneAsync(double lon, double lat)

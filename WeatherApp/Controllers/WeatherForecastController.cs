@@ -83,23 +83,30 @@ public class WeatherForecastController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> AddForecast([FromBody] Coordinates coordinates)
     {
-        // validate coordinates using ModelState. 
+        // validate coordinates using ModelState.
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        var weatherForecast = await _openMeteo.GetForecast(coordinates.longitude.Value, coordinates.latitude.Value);
-        if (weatherForecast != null)
+        try
         {
-            await _mongoDb.InsertOneAsync(weatherForecast);
+            var weatherForecast = await _openMeteo.GetForecast(coordinates.longitude.Value, coordinates.latitude.Value);
+            if (weatherForecast != null)
+            {
+                await _mongoDb.InsertOneAsync(weatherForecast);
 
-            var response = new { id = weatherForecast._id.ToString() };
+                var response = new { id = weatherForecast._id.ToString() };
 
-            // return 201 with location of newly created resource. i.e. /weatherforecast/{id}
-            return CreatedAtAction("GetForecast", new { id = weatherForecast._id }, response);
+                // return 201 with location of newly created resource. i.e. /weatherforecast/{id}
+                return CreatedAtAction("GetForecast", new { id = weatherForecast._id }, response);
+            }
         }
-
+        catch (Exception e)
+        {
+            _logger.LogError("Error: {0}", e.Message);
+            return Problem(detail: e.Message, statusCode: StatusCodes.Status500InternalServerError );
+        }
         return Problem(detail: "An error occured", statusCode: StatusCodes.Status500InternalServerError );
     }
     
