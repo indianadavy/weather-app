@@ -116,23 +116,27 @@ public class WeatherForecastController : ControllerBase
             return BadRequest(ModelState);
         }
         
-        var latestWeatherForecast = await _openMeteo.GetForecast(coordinates.longitude.Value, coordinates.latitude.Value);
         var existingWeatherForecast = await _mongoDb.GetOneAsync(coordinates.longitude.Value, coordinates.latitude.Value);
         
-        // if both documents exist, update the existing document with the latest forecast
-        // make sure latest has the same _id as existing before updating
-
-        if (latestWeatherForecast != null && existingWeatherForecast != null)
+        if (existingWeatherForecast == null)
+        {
+            return NotFound();
+        }
+        
+        var latestWeatherForecast = await _openMeteo.GetForecast(coordinates.longitude.Value, coordinates.latitude.Value);
+        
+        // Update the existing document with the latest forecast
+        if (latestWeatherForecast != null)
         {
             latestWeatherForecast._id = new ObjectId(existingWeatherForecast._id);
             var updatedResult = await _mongoDb.UpdateOneAsync(latestWeatherForecast);
             if (updatedResult)
             {
-                return Ok(latestWeatherForecast);
+                return Ok(ModelHelper.MapToDto(latestWeatherForecast));
             }
         }
 
-        return BadRequest("Update failed");
+        return Problem(detail: "Update failed", statusCode: StatusCodes.Status500InternalServerError );
     }
 
     /// <summary>
@@ -162,14 +166,16 @@ public class WeatherForecastController : ControllerBase
     /// <summary>
     /// Gets all weather forecasts from the database.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>List of ids, and coordinates</returns>
     [HttpGet("all")]
     public async Task<IActionResult> GetForecasts()
     {
         var dataPoints = await _mongoDb.List();
         
         // only return id, longitude and latitude
-        var result = dataPoints.Select(x => new { id = x._id.ToString(), x.location.Coordinates.Longitude, x.location.Coordinates.Latitude });
+        // var result = dataPoints.Select(x => new { id = x._id.ToString(), x.location.Coordinates.Longitude, x.location.Coordinates.Latitude })
+        //     .ToList();
+        var result = dataPoints.Select(x => new ObjectIdCoordinates(x._id.ToString(), x.location.Coordinates.Longitude, x.location.Coordinates.Latitude));
         
         return Ok(result);
     }
